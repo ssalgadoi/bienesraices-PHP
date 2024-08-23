@@ -25,7 +25,7 @@ $estacionamiento = '';
 $vendedores_id = '';
 
 // Verificamos si el formulario ha sido enviado.
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') 
     // Asignamos los valores que el usuario ingresó en el formulario a nuestras variables.
     $titulo = mysqli_real_escape_string($db, $_POST['titulo']);
     $precio = mysqli_real_escape_string($db, $_POST['precio']);
@@ -70,37 +70,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Si no hay errores, procedemos a guardar la información en la base de datos.
-    if (empty($errores)) {
-        // Subida de Archivos
-        $carpetaImagenes = '../../imagenes/';
-        if (!is_dir($carpetaImagenes)) {
-            mkdir($carpetaImagenes);
-        }
+if (empty($errores)) {
+    // Subida de Archivos
+    $carpetaImagenes = '../../imagenes/';
+    if (!is_dir($carpetaImagenes)) {
+        mkdir($carpetaImagenes);
+    }
 
-        // Generar un nombre único
-        $nombreImagen = md5(uniqid(rand(), true)) . ".jpg";
+    // Generar un nombre único
+    $nombreImagen = md5(uniqid(rand(), true)) . ".jpg";
 
-        // Subir Imágenes
-        if (move_uploaded_file($imagen['tmp_name'], $carpetaImagenes . $nombreImagen )) {
-            // Esta es la consulta SQL que inserta la nueva propiedad en la base de datos.
-            $query = "INSERT INTO propiedades (titulo, precio, imagen, descripcion, habitaciones, wc, estacionamiento, `create`, vendedores_id) 
-            VALUES ('$titulo', '$precio', '$nombreImagen' , '$descripcion', '$habitaciones', '$wc', '$estacionamiento', '$create',  '$vendedores_id')";
+    // Subir Imágenes
+    if (move_uploaded_file($imagen['tmp_name'], $carpetaImagenes . $nombreImagen)) {
+        // Esta es la consulta SQL que inserta la nueva propiedad en la base de datos.
+        $query = "INSERT INTO propiedades (titulo, precio, imagen, descripcion, habitaciones, wc, estacionamiento, `create`, vendedores_id) 
+        VALUES ('$titulo', '$precio', '$nombreImagen' , '$descripcion', '$habitaciones', '$wc', '$estacionamiento', '$create',  '$vendedores_id')";
 
-            // Ejecutamos la consulta SQL.
-            $resultado = mysqli_query($db, $query);
+        // Ejecutamos la consulta SQL.
+        $resultado = mysqli_query($db, $query);
 
-            // Si la consulta se ejecuta con éxito, redirigimos al usuario a la página de administración.
-            if ($resultado) {
-                header("Location: /admin?resultado=1");
-                exit;
-            } else {
-                $errores[] = 'Error al guardar la propiedad en la base de datos.';
-            }
-        } else {
-            $errores[] = 'Error al subir la imagen.';
+        // Si la consulta se ejecuta con éxito, redirigimos al usuario a la página de administración.
+        if ($resultado) {
+            header("Location: /admin?resultado=1");
+            exit;
         }
     }
 }
+
 
 // Este archivo incluye algunas funciones adicionales que pueden ser útiles.
 require '../../includes/funciones.php';

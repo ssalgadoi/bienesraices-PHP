@@ -30,6 +30,7 @@ $resultado = mysqli_query($db, $consulta);
 // Creamos un arreglo vacío donde guardaremos los mensajes de error si algo sale mal.
 $errores = [];
 
+
 // Inicializamos varias variables para almacenar la información que se va a enviar.
 $titulo = $propiedad['titulo'];
 $precio = $propiedad['precio'];
@@ -38,11 +39,16 @@ $habitaciones = $propiedad['habitaciones'];
 $wc = $propiedad['wc'];
 $estacionamiento = $propiedad['estacionamiento'];
 $vendedores_id = $propiedad['vendedores_id'];
-$imagenPropiedad = $propiedad['imagen'];
+$imagenPropiedad = $propiedad['imagen']; // Mantener la imagen existente
 
 
-// Verificamos si el formulario ha sido enviado.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // Debug: Ver los datos del formulario
+    echo "<pre>";
+    var_dump($_POST);
+    echo "</pre>";
+
     // Asignamos los valores que el usuario ingresó en el formulario a nuestras variables.
     $titulo = mysqli_real_escape_string($db, $_POST['titulo']);
     $precio = mysqli_real_escape_string($db, $_POST['precio']);
@@ -51,10 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $wc = mysqli_real_escape_string($db, $_POST['wc']);
     $estacionamiento = mysqli_real_escape_string($db, $_POST['estacionamiento']);
     $vendedores_id = mysqli_real_escape_string($db, $_POST['vendedor']);
-    $create = date('Y/m/d');
-
-    // Asignar files hacia una variable
-    $imagen = $_FILES['imagen'];
+    $id = isset($_GET['id']) ? mysqli_real_escape_string($db, $_GET['id']) : '';
 
     // Verificamos que cada campo tenga información.
     if (!$titulo) {
@@ -62,13 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!$precio) {
         $errores[] = "Debes añadir un precio";
-    }
-    if (!$imagen['name'] || $imagen['error']) {
-        $errores[] = "Debes añadir una imagen";
-    }
-    $medida = 100 * 1024; // 100 KB
-    if ($imagen['size'] > $medida) {
-        $errores[] = 'La imagen es muy pesada';
     }
     if (strlen($descripcion) < 50) {
         $errores[] = "Debes añadir una descripción y debe tener al menos 50 caracteres";
@@ -85,39 +81,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$vendedores_id) {
         $errores[] = "Debes añadir un vendedor";
     }
+    if (!$id) {
+        $errores[] = "ID no válido";
+    }
 
     // Si no hay errores, procedemos a guardar la información en la base de datos.
     if (empty($errores)) {
-        // Subida de Archivos
+
+        // Configurar la carpeta de imágenes
         $carpetaImagenes = '../../imagenes/';
+
         if (!is_dir($carpetaImagenes)) {
             mkdir($carpetaImagenes);
         }
 
-        // Generar un nombre único
-        $nombreImagen = md5(uniqid(rand(), true)) . ".jpg";
+        // Obtener la imagen actual desde la base de datos
+        $query = "SELECT imagen FROM propiedades WHERE id = {$id}";
+        $resultado = mysqli_query($db, $query);
+        $propiedad = mysqli_fetch_assoc($resultado);
 
-        // Subir Imágenes
-        if (move_uploaded_file($imagen['tmp_name'], $carpetaImagenes . $nombreImagen )) {
-            // Esta es la consulta SQL que inserta la nueva propiedad en la base de datos.
-            $query = "INSERT INTO propiedades (titulo, precio, imagen, descripcion, habitaciones, wc, estacionamiento, `create`, vendedores_id) 
-            VALUES ('$titulo', '$precio', '$nombreImagen' , '$descripcion', '$habitaciones', '$wc', '$estacionamiento', '$create',  '$vendedores_id')";
+        if ($propiedad) {
+            $imagenActual = $propiedad['imagen'];
+
+            // Subida de Archivos
+            if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+                $imagen = $_FILES['imagen'];
+
+                // Generar un nombre único para la imagen
+                $nombreImagen = md5(uniqid(rand(), true)) . ".jpg";
+
+                // Mover el archivo subido a la carpeta de imágenes
+                if (move_uploaded_file($imagen['tmp_name'], $carpetaImagenes . $nombreImagen)) {
+                    // Eliminar la imagen antigua
+                    if ($imagenActual && file_exists($carpetaImagenes . $imagenActual)) {
+                        unlink($carpetaImagenes . $imagenActual);
+                    }
+
+                    // Actualizar la base de datos con la nueva imagen
+                    $query = "UPDATE propiedades SET 
+                            titulo = '{$titulo}', 
+                            precio = '{$precio}', 
+                            imagen = '{$nombreImagen}',
+                            descripcion = '{$descripcion}', 
+                            habitaciones = {$habitaciones}, 
+                            wc = {$wc}, 
+                            estacionamiento = {$estacionamiento}, 
+                            vendedores_id = {$vendedores_id} 
+                        WHERE id = {$id}";
+                }
+            } else {
+                // Si no se sube una nueva imagen, conservar la imagen actual
+                $nombreImagen = $imagenActual;
+
+                // Actualizar la base de datos sin cambiar la imagen
+                $query = "UPDATE propiedades SET 
+                        titulo = '{$titulo}', 
+                        precio = '{$precio}', 
+                        imagen = '{$nombreImagen}', 
+                        descripcion = '{$descripcion}', 
+                        habitaciones = {$habitaciones}, 
+                        wc = {$wc}, 
+                        estacionamiento = {$estacionamiento}, 
+                        vendedores_id = {$vendedores_id} 
+                    WHERE id = {$id}";
+            }
 
             // Ejecutamos la consulta SQL.
             $resultado = mysqli_query($db, $query);
 
             // Si la consulta se ejecuta con éxito, redirigimos al usuario a la página de administración.
             if ($resultado) {
-                header("Location: /admin?resultado=1");
+                header("Location: /admin?resultado=2");
                 exit;
-            } else {
-                $errores[] = 'Error al guardar la propiedad en la base de datos.';
             }
-        } else {
-            $errores[] = 'Error al subir la imagen.';
         }
     }
 }
+
 
 // Este archivo incluye algunas funciones adicionales que pueden ser útiles.
 require '../../includes/funciones.php';
@@ -132,7 +172,7 @@ incluirTemplate('header');
             <?php echo $error; ?>
         </div>
     <?php endforeach; ?>
-    <form class="formulario" method="POST" action="/admin/propiedades/crear.php" enctype="multipart/form-data">
+    <form class="formulario" method="POST"  enctype="multipart/form-data">
         <fieldset>
             <legend>Información General</legend>
             <label for="titulo">Título:</label>
