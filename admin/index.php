@@ -1,15 +1,11 @@
 <?php
 
-session_start();
-    // echo "<pre>";
-    // var_dump($_SESSION);
-    // echo "</pre>";
+require '../includes/funciones.php';
+$auth = estaAutenticado();
 
-    $auth = $_SESSION['login'];
-
-    if ( !$auth ) {
-        header('Location: /');
-    } 
+if ( !$auth ) {
+    header('Location: /');
+} 
 
 
 require '../includes/config/database.php';
@@ -53,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-require '../includes/funciones.php';
+
 incluirTemplate('header');
 ?>
 

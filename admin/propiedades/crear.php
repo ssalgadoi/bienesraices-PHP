@@ -1,4 +1,10 @@
 <?php
+require '../../includes/funciones.php';
+$auth = estaAutenticado();
+
+if ( !$auth ) {
+    header('Location: /');
+} 
 
 
 // Este archivo se usa para conectarse a la base de datos.
@@ -98,8 +104,6 @@ if (empty($errores)) {
 }
 
 
-// Este archivo incluye algunas funciones adicionales que pueden ser útiles.
-require '../../includes/funciones.php';
 incluirTemplate('header');
 ?>
 
