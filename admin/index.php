@@ -1,4 +1,17 @@
 <?php
+
+session_start();
+    // echo "<pre>";
+    // var_dump($_SESSION);
+    // echo "</pre>";
+
+    $auth = $_SESSION['login'];
+
+    if ( !$auth ) {
+        header('Location: /');
+    } 
+
+
 require '../includes/config/database.php';
 $db = conectarBD();
 
