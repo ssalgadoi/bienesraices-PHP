@@ -3,7 +3,8 @@
     incluirTemplate('header');
 
     // Obtener el ID de la propiedad desde la URL
-    $id = $_GET['id'] ?? null;
+    $id = $_GET['id'];
+    $id = filter_var($id, FILTER_VALIDATE_INT);
 
     // Verificar si hay un ID válido
     if (!$id) {
@@ -15,15 +16,17 @@
     require 'includes/config/database.php';
     $db = conectarBD();
 
-    // Sanitizar el ID
-    $id = mysqli_real_escape_string($db, $id);
+   
 
     // Consulta para obtener los detalles de la propiedad
     $query = "SELECT * FROM propiedades WHERE id = {$id}";
+
+
     $resultado = mysqli_query($db, $query);
 
-   
-
+    if ( !$resultado->num_rows) {
+        header('Location: /');
+    }
     $propiedad = mysqli_fetch_assoc($resultado);
 ?>
 
@@ -54,10 +57,9 @@
 </main>
 
 <?php
+
+    mysqli_close($db);
+    
     incluirTemplate('footer');
 ?>
 
-<?php 
-    mysqli_close($db);
-
-?>
