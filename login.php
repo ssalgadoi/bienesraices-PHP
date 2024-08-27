@@ -1,6 +1,6 @@
 <?php
-    require 'includes/config/database.php';
-    require 'includes/funciones.php'; // Asegúrate de incluir funciones.php aquí
+    
+    require 'includes/app.php'; // Asegúrate de incluir funciones.php aquí
 
     $db = conectarBD();
 

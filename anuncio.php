@@ -1,6 +1,7 @@
 <?php
-    require 'includes/funciones.php';
-    incluirTemplate('header');
+   
+   require 'includes/app.php';
+   $db = conectarBD();
 
     // Obtener el ID de la propiedad desde la URL
     $id = $_GET['id'];
@@ -12,9 +13,7 @@
         exit;
     }
 
-    // Importar la conexión a la base de datos
-    require 'includes/config/database.php';
-    $db = conectarBD();
+  
 
    
 
@@ -28,6 +27,8 @@
         header('Location: /');
     }
     $propiedad = mysqli_fetch_assoc($resultado);
+
+    incluirTemplate('header');
 ?>
 
 <main class="contenedor seccion contenido-centrado">

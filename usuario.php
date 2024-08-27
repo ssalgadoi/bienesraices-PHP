@@ -1,7 +1,7 @@
 <?php 
     // IMportamos conexion
 
-    require 'includes/config/database.php';
+    require 'includes/app.php';
     $db = conectarBD();
 
     // creamos un email y usuario

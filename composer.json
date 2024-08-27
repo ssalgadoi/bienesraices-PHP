@@ -1,0 +1,23 @@
+{
+    "name": "salgado/bienesraices",
+    "description": "Creando un proyecto con POO",
+    "type": "project",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "ssalgadoi",
+            "email": "se.salgado@duocuc.cl"
+        }
+    ],
+    "require": {
+        "php": "^8.3"
+       
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "./classes"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
