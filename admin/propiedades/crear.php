@@ -1,5 +1,11 @@
 <?php
-require '../../includes/funciones.php';
+require '../../includes/app.php';
+
+use App\Propiedad;
+
+$propiedad = new Propiedad;
+
+var_dump($propiedad);
 $auth = estaAutenticado();
 
 if ( !$auth ) {
@@ -7,8 +13,7 @@ if ( !$auth ) {
 } 
 
 
-// Este archivo se usa para conectarse a la base de datos.
-require '../../includes/config/database.php';
+
 
 // Conexión a la base de datos.
 $db = conectarBD();
